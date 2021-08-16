@@ -6,7 +6,6 @@ import { unAuthorizedHandler, notFoundErrorHandler, badRequestErrorHandler, forb
 
 
 
-
 const server = express();
 
 server.use(cors());
@@ -22,10 +21,12 @@ server.use(catchAllErrorHandler);
 
 const port = process.env.PORT || 3001
 
-mongoose.connect(process.env.MONGO_CONNECTION, { useNewUrlParser: true }).then(() => {
+mongoose.connect(process.env.MONGO_CONNECTION, { useNewUrlParser: true }, { useUnifiedTopology: true }).then(() => {
+    console.log("fgfdsgdfgfdgsdfgfdsgsdfg", process.env.MONGO_CONNECTION)
+    console.log("asdfasfsdaf", process.env.PORT)
   console.log("Connected to mongo");
   server.listen(port, () => {
-    console.table(listEndpoints(app));
+    console.table(listEndpoints(server));
     console.log("Server listening on port " + port);
   });
 });
