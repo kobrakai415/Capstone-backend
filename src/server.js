@@ -2,19 +2,34 @@ import express from 'express';
 import mongoose from "mongoose";
 import cors from 'cors';
 import listEndpoints from 'express-list-endpoints';
-import { unAuthorizedHandler, notFoundErrorHandler, badRequestErrorHandler, forbiddenErrorHandler, catchAllErrorHandler } from "./errorHandlers.js";
+import { unAuthorizedHandler, notFoundErrorHandler, badRequestErrorHandler, forbiddenErrorHandler, catchAllErrorHandler, mongoErrorHandlers } from "./errorHandlers.js";
 import NewsRouter from "./services/news/index.js";
 import UserRouter from "./services/users/index.js";
-
+import cookieParser from 'cookie-parser';
 
 const server = express();
 
-server.use(cors());
+const whitelist = [process.env.FE_DEV_URL, process.env.FE_PROD_URL, "http://localhost:3000"]
+console.log('whitelist:', whitelist)
+
+const corsOptions = {
+  origin: function(origin, next){
+    if(whitelist.indexOf(origin) !== -1){
+      next(null, next)
+    }else{
+      next(createError(403, {message:"Origin not allowed"}))
+    }
+  }
+}
+
+server.use(cors(corsOptions));
 server.use(express.json());
+server.use(cookieParser());
 
 server.use("/", NewsRouter)
 server.use("/users", UserRouter)
 
+server.use(mongoErrorHandlers);
 server.use(unAuthorizedHandler);
 server.use(notFoundErrorHandler);
 server.use(badRequestErrorHandler);

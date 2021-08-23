@@ -1,14 +1,18 @@
 import mongoose from "mongoose"
 import bcrypt from "bcrypt"
+import createError from "create-error"
 
 const { model, Schema } = mongoose
 
 
 const UserSchema = new Schema({
-    name: {type: String, required: true},
-    surname: {type: String, required: true},
+    name: { type: String, required: true },
+    surname: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    balance: { type: Number, required: true },
+    portfolio: [{ type: Schema.Types.ObjectId, ref: "Position" }],
+    watchlists: [{ type: Schema.Types.ObjectId, ref: "Position" }]
 
 })
 

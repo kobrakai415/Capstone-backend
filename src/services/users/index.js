@@ -11,19 +11,19 @@ const router = express.Router()
 
 router.post("/register", async (req, res, next) => {
     try {
-
+        
         const newUser = new UserModel(req.body)
-
         const user = await newUser.save()
+        console.log(user)
 
         if (user) {
 
             const { accessToken, refreshToken } = await JwtAuthenticateUser(user)
-            res.cookie("accessToken", accessToken, { httpOnly: true })
+            res.cookie("accessToken", accessToken, { })
             res.cookie("refreshToken", refreshToken, { httpOnly: true })
 
             res.status(201).send(user)
-
+            console.log(res)
         } else {
             next(createError(400, "Error creating new user, please try again!"))
         }
@@ -44,10 +44,10 @@ router.post("/login", LoginValidator, async (req, res, next) => {
         if (user) {
 
             const { accessToken, refreshToken } = await JwtAuthenticateUser(user)
-            res.cookie("accessToken", accessToken, { httpOnly: true })
-            res.cookie("refreshToken", refreshToken, { httpOnly: true })
+            res.cookie("accessToken", accessToken)
+            res.cookie("refreshToken", refreshToken)
 
-            res.send()
+            res.send(user)
         } else {
             next(createError(404, "User not found, check credentials!"))
         }
