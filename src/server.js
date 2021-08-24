@@ -5,6 +5,7 @@ import listEndpoints from 'express-list-endpoints';
 import { unAuthorizedHandler, notFoundErrorHandler, badRequestErrorHandler, forbiddenErrorHandler, catchAllErrorHandler, mongoErrorHandlers } from "./errorHandlers.js";
 import NewsRouter from "./services/news/index.js";
 import UserRouter from "./services/users/index.js";
+import TradeRouter from './services/positions/index.js';
 import cookieParser from 'cookie-parser';
 
 const server = express();
@@ -19,21 +20,23 @@ const corsOptions = {
     }else{
       next(createError(403, {message:"Origin not allowed"}))
     }
-  }
+  }, 
+  credentials: true
 }
 
-server.use(cors(corsOptions));
+// server.use(cors(corsOptions));
 server.use(express.json());
 server.use(cookieParser());
 
 server.use("/", NewsRouter)
 server.use("/users", UserRouter)
+server.use("/trade", TradeRouter)
 
-server.use(mongoErrorHandlers);
 server.use(unAuthorizedHandler);
 server.use(notFoundErrorHandler);
 server.use(badRequestErrorHandler);
 server.use(forbiddenErrorHandler);
+server.use(mongoErrorHandlers);
 server.use(catchAllErrorHandler);
 
 

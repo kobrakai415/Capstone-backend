@@ -1,5 +1,6 @@
 import express from 'express';
 import axios from 'axios';
+import createError from 'create-error';
 
 
 const newsRoute = express.Router()
@@ -10,6 +11,8 @@ newsRoute.get("/news/:symbol", async ( req, res, next) => {
 
         if(response.status === 200){
             res.send(response.data.data)
+        }else{
+            next(createError(404, "No news for stock"))
         }
     } catch (error) {
         next(error)

@@ -40,9 +40,8 @@ router.put("/watchlists", async (req, res, next) => {
         const watchlist = await WatchlistModel.findById(req.body.id)
 
         if (watchlist) {
-            const new = new WatchlistModel(req.body)
-            const savedPosition = await newPosition.save()
-            console.log(savedPosition)
+            const updatedWatchlist = await WatchlistModel.findByIdAndUpdate(req.body.id)
+
         } else {
             next(createError(404, "Watchlist not found!"))
         }
@@ -52,13 +51,9 @@ router.put("/watchlists", async (req, res, next) => {
 })
 router.delete("/watchlists", async (req, res, next) => {
     try {
-        const watchlist = await WatchlistModel.find({ "stock": req.body.stock })
+        const watchlist = await WatchlistModel.findByIdAndDelete(req.body.id)
 
-        if (!stock) {
-            const new = new WatchlistModel(req.body)
-            const savedPosition = await newPosition.save()
-            console.log(savedPosition)
-        }
+
     } catch (error) {
         next(error)
     }

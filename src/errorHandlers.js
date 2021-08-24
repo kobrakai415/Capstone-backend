@@ -32,6 +32,27 @@ export const forbiddenErrorHandler = (err, req, res, next) => {
   }
 };
 
+
+//error controller function
+export const mongoErrorHandlers = (err, req, res, next) => {
+  try {
+    console.log('congrats you hit the error middleware', err);
+    
+    if (err.name === 'ValidationError') return err = handleValidationError(err, res);
+    if (err.code && err.code == 11000) return err = handleDuplicateKeyError(err, res);
+    
+    next(err)
+  } catch (err) {
+    res.status(500).send('An unknown error occured.');
+  }
+}
+
+export const catchAllErrorHandler = (err, req, res, next) => {
+  console.log(err)
+  res.status(500).send("Generic Server Error");
+};
+
+
 const handleDuplicateKeyError = (err, res) => {
   const field = Object.keys(err.keyValue);
   const code = 409;
@@ -52,19 +73,3 @@ const handleValidationError = (err, res) => {
     res.status(code).send({ messages: errors, fields: fields })
   }
 }
-
-//error controller function
-export const mongoErrorHandlers = (err, req, res, next) => {
-  try {
-    console.log('congrats you hit the error middleware', err);
-    if (err.name === 'ValidationError') return err = handleValidationError(err, res);
-    if (err.code && err.code == 11000) return err = handleDuplicateKeyError(err, res);
-
-    next(err)
-  } catch (err) {
-    res.status(500).send('An unknown error occured.');
-  }
-}
-export const catchAllErrorHandler = (err, req, res, next) => {
-  res.status(500).send("Generic Server Error");
-};

@@ -6,23 +6,27 @@ const secret = process.env.JWT_SECRET
 const refreshSecret = process.env.JWT_REFRESH_SECRET
 
 export const JwtAuthenticateToken = async (req, res, next) => {
-    if (!req.headers.authorization) next(createError(400, "Please provide a bearer token!"))
+    console.log(req.cookies)
+    if (!req.cookies.accessToken) {
+        next( (400, "Please provide a bearer token!"))
+    } else {
 
-    try {
-        const token = req.headers.authorization.replace("Bearer ", "")
-        const payload = await verifyAccessToken(token)
-        
-        const user = await UserModel.findById(payload._id)
-        
-        if(user) {
-            req.user = user
-            next()
-        } else {
-            next(createError(404, "User not found!"))
+        try {
+            const token = req.cookies.accessToken
+            const payload = await verifyAccessToken(token)
+
+            const user = await UserModel.findById(payload._id)
+            console.log(user)
+            if (user) {
+                req.user = user
+                next()
+            } else {
+                next(createError(404, "User not found!"))
+            }
+
+        } catch (error) {
+            next(error)
         }
-
-    } catch (error) {
-        next(error)
     }
 }
 
@@ -69,29 +73,27 @@ export const verifyRefreshToken = token => {
 }
 
 export const refreshTokens = async actualRefreshToken => {
-  
-    const content = await verifyRefreshToken(actualRefreshToken)
-  
- 
-    const user = await UserModel.findById(content._id)
-  
-    if (!user) throw new Error("User not found")
-  
-   
-  
-    if (user.refreshToken === actualRefreshToken) {
-     
-      const newAccessToken = await generateJWT({ _id: user._id })
-  
-      const newRefreshToken = await generateRefreshJWT({ _id: user._id })
 
-  
-      user.refreshToken = newRefreshToken
-  
-      await user.save()
-  
-      return { newAccessToken, newRefreshToken }
+    const content = await verifyRefreshToken(actualRefreshToken)
+
+    const user = await UserModel.findById(content._id)
+
+    if (!user) throw new Error("User not found")
+
+
+    if (user.refreshToken === actualRefreshToken) {
+
+        const newAccessToken = await generateJWT({ _id: user._id })
+
+        const newRefreshToken = await generateRefreshJWT({ _id: user._id })
+
+
+        user.refreshToken = newRefreshToken
+
+        await user.save()
+
+        return { newAccessToken, newRefreshToken }
     } else {
-      throw new Error("Refresh Token not valid!")
+        throw new Error("Refresh Token not valid!")
     }
-  }
+}

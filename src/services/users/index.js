@@ -56,6 +56,22 @@ router.post("/login", LoginValidator, async (req, res, next) => {
     }
 })
 
+router.post("/refreshToken", async (req, res, next) => {
+    try {
+        if (!req.cookies.refreshToken) next(createError(400, "Refresh Token not provided"))
+        else {
+            const { newAccessToken, newRefreshToken } = await refreshTokens(req.cookies.refreshToken)
+            res.cookie("accessToken", newAccessToken, )
+            res.cookie("refreshToken", newRefreshToken, { path: "/users/refreshToken" })
+            res.send("OK")
+        }
+    } catch (error) {
+        next(error)
+    }
+
+
+})
+
 router.post("/refreshToken", JwtAuthenticateToken,)
 
 
