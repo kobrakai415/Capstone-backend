@@ -24,7 +24,7 @@ const corsOptions = {
   credentials: true
 }
 
-// server.use(cors(corsOptions));
+server.use(cors(corsOptions));
 server.use(express.json());
 server.use(cookieParser());
 

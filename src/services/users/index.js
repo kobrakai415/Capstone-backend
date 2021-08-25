@@ -2,8 +2,7 @@ import express from "express"
 import UserModel from "../../models/user/schema.js"
 import createError from "http-errors"
 import { LoginValidator } from "../../helpers/validators.js"
-import { JwtAuthenticateUser } from "../../auth/JWT.js"
-import { JwtAuthenticateToken } from "../../auth/JWT.js"
+import { JwtAuthenticateUser, JwtAuthenticateToken, verifyAccessToken } from "../../auth/JWT.js"
 import { validationResult } from "express-validator"
 
 
@@ -11,7 +10,7 @@ const router = express.Router()
 
 router.post("/register", async (req, res, next) => {
     try {
-        
+
         const newUser = new UserModel(req.body)
         const user = await newUser.save()
         console.log(user)
@@ -19,7 +18,7 @@ router.post("/register", async (req, res, next) => {
         if (user) {
 
             const { accessToken, refreshToken } = await JwtAuthenticateUser(user)
-            res.cookie("accessToken", accessToken, { })
+            res.cookie("accessToken", accessToken, {})
             res.cookie("refreshToken", refreshToken, { httpOnly: true })
 
             res.status(201).send(user)
@@ -61,7 +60,7 @@ router.post("/refreshToken", async (req, res, next) => {
         if (!req.cookies.refreshToken) next(createError(400, "Refresh Token not provided"))
         else {
             const { newAccessToken, newRefreshToken } = await refreshTokens(req.cookies.refreshToken)
-            res.cookie("accessToken", newAccessToken, )
+            res.cookie("accessToken", newAccessToken,)
             res.cookie("refreshToken", newRefreshToken, { path: "/users/refreshToken" })
             res.send("OK")
         }
@@ -72,7 +71,24 @@ router.post("/refreshToken", async (req, res, next) => {
 
 })
 
-router.post("/refreshToken", JwtAuthenticateToken,)
+router.post("/checkAccessToken", async (req, res, next) => {
+    try {
+        if (!req.cookies.accessToken) next(createError(400, "No accessToken provided"))
+
+        const checkToken = await verifyAccessToken(req.cookies.accessToken)
+
+        if (checkToken._id) {
+            const user = await UserModel.findById(checkToken._id).populate("portfolio")
+
+            res.status(200).send(user)
+        } else {
+            next(createError(400, "JWT EXPIRED!"))
+        }
+
+    } catch (error) {
+        next(error)
+    }
+})
 
 
 export default router

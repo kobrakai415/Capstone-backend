@@ -12,15 +12,12 @@ const UserSchema = new Schema({
     password: { type: String, required: true },
     balance: { type: Number, required: true },
     portfolio: [{ type: Schema.Types.ObjectId, ref: "Position" }],
-    watchlists: [{ type: Schema.Types.ObjectId, ref: "Position" }]
+    watchlists: [{ type: Schema.Types.ObjectId, ref: "Watchlist" }]
 
 })
 
 UserSchema.post("validate", (error, doc, next) => {
     if (error) {
-        const err = createError(400, error)
-        next(err)
-    } else {
         next(error)
     }
 })

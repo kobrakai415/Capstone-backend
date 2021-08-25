@@ -36,8 +36,7 @@ export const forbiddenErrorHandler = (err, req, res, next) => {
 //error controller function
 export const mongoErrorHandlers = (err, req, res, next) => {
   try {
-    console.log('congrats you hit the error middleware', err);
-    
+ 
     if (err.name === 'ValidationError') return err = handleValidationError(err, res);
     if (err.code && err.code == 11000) return err = handleDuplicateKeyError(err, res);
     
@@ -48,7 +47,7 @@ export const mongoErrorHandlers = (err, req, res, next) => {
 }
 
 export const catchAllErrorHandler = (err, req, res, next) => {
-  console.log(err)
+ 
   res.status(500).send("Generic Server Error");
 };
 
