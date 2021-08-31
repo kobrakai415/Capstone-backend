@@ -47,7 +47,7 @@ export const mongoErrorHandlers = (err, req, res, next) => {
 }
 
 export const catchAllErrorHandler = (err, req, res, next) => {
- 
+  console.log("500", err)
   res.status(500).send("Generic Server Error");
 };
 

@@ -6,6 +6,7 @@ import { unAuthorizedHandler, notFoundErrorHandler, badRequestErrorHandler, forb
 import NewsRouter from "./services/news/index.js";
 import UserRouter from "./services/users/index.js";
 import TradeRouter from './services/positions/index.js';
+import WatchlistRouter from './services/watchlists/index.js';
 import cookieParser from 'cookie-parser';
 
 const server = express();
@@ -31,6 +32,8 @@ server.use(cookieParser());
 server.use("/", NewsRouter)
 server.use("/users", UserRouter)
 server.use("/trade", TradeRouter)
+server.use("/watchlists", WatchlistRouter)
+
 
 server.use(unAuthorizedHandler);
 server.use(notFoundErrorHandler);

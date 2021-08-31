@@ -21,7 +21,9 @@ router.post("/register", async (req, res, next) => {
             res.cookie("accessToken", accessToken, {})
             res.cookie("refreshToken", refreshToken, { httpOnly: true })
 
-            res.status(201).send(user)
+            const userToSend = await UserModel.findById(req.user._id).populate("portfolio watchlists")
+            
+            res.status(201).send(userToSend)
             console.log(res)
         } else {
             next(createError(400, "Error creating new user, please try again!"))
@@ -45,8 +47,9 @@ router.post("/login", LoginValidator, async (req, res, next) => {
             const { accessToken, refreshToken } = await JwtAuthenticateUser(user)
             res.cookie("accessToken", accessToken)
             res.cookie("refreshToken", refreshToken)
-
-            res.send(user)
+            const findUser = await UserModel.findById(user._id).populate("portfolio watchlists")
+            
+            res.send(findUser)
         } else {
             next(createError(404, "User not found, check credentials!"))
         }
@@ -78,7 +81,7 @@ router.post("/checkAccessToken", async (req, res, next) => {
         const checkToken = await verifyAccessToken(req.cookies.accessToken)
 
         if (checkToken._id) {
-            const user = await UserModel.findById(checkToken._id).populate("portfolio")
+            const user = await UserModel.findById(checkToken._id).populate("portfolio watchlists")
 
             res.status(200).send(user)
         } else {

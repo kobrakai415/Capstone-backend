@@ -18,6 +18,7 @@ const UserSchema = new Schema({
 
 UserSchema.post("validate", (error, doc, next) => {
     if (error) {
+        console.log(error)
         next(error)
     }
 })
