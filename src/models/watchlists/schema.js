@@ -5,19 +5,21 @@ const { model, Schema } = mongoose
 
 
 const WatchlistSchema = new Schema({
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: true },
     stocks: [
         {
-            name: { type: String, required: true },
+            name: { type: String},
             ticker: { type: String, required: true },
-            
+            exchange: { type: String, required: true },
+            sector: { type: String, required: true }
+
         }],
 })
 
 WatchlistSchema.post("validate", (error, doc, next) => {
     if (error) {
-        const err = createError(400, error)
-        next(err)
+        console.log(error)
+        next(error)
     } else {
         next(error)
     }

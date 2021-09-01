@@ -6,9 +6,8 @@ const secret = process.env.JWT_SECRET
 const refreshSecret = process.env.JWT_REFRESH_SECRET
 
 export const JwtAuthenticateToken = async (req, res, next) => {
-    console.log(req.cookies)
     if (!req.cookies.accessToken) {
-        next( (400, "Please provide a bearer token!"))
+        next((400, "Please provide a bearer token!"))
     } else {
 
         try {
@@ -16,7 +15,7 @@ export const JwtAuthenticateToken = async (req, res, next) => {
             const payload = await verifyAccessToken(token)
 
             const user = await UserModel.findById(payload._id)
-            console.log(user)
+
             if (user) {
                 req.user = user
                 next()
@@ -56,12 +55,14 @@ const generateRefreshToken = (payload) => {
     })
 }
 
-export const verifyAccessToken = token => {
-    return new Promise((resolve, reject) => {
-        jwt.verify(token, process.env.JWT_SECRET, (err, token) => {
-            err ? reject(err) : resolve(token)
+export const verifyAccessToken = (token, next) => {
+    
+        return new Promise((resolve, reject) => {
+            jwt.verify(token, process.env.JWT_SECRET, (err, token) => {
+                err ? reject(err) : resolve(token)
+            })
         })
-    })
+  
 }
 
 export const verifyRefreshToken = token => {
