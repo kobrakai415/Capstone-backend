@@ -102,12 +102,36 @@ router.put("/watchlists", JwtAuthenticateToken, async (req, res, next) => {
         next(error)
     }
 })
-router.delete("/watchlists", JwtAuthenticateToken, async (req, res, next) => {
+
+router.delete("/:id/delete", JwtAuthenticateToken, async (req, res, next) => {
     try {
-        const watchlist = await WatchlistModel.findByIdAndDelete(req.body.id)
+
+        if (!isValidObjectId(req.params.id)) next(createError(404, `ID ${req.params.id} is invalid`))
+
+
+        const watchlist = await WatchlistModel.findByIdAndDelete(req.params.id)
+        console.log("1", watchlist)
+
+        if (watchlist) {
+            const user = await UserModel.findByIdAndUpdate(req.user._id,
+                {
+                    $pull: { watchlists: { _id: req.params.id } }
+                },
+                { new: true }).populate("watchlists portfolio")
+                console.log(user)
+            if (user) {
+                res.status(200).send(user)
+            } else {
+                next(createError(400, "Error deleting watchlist!"))
+            }
+        } else {
+            
+            next(createError(400, "Error deleting watchlist!"))
+        }
 
 
     } catch (error) {
+        console.log(error)
         next(error)
     }
 })

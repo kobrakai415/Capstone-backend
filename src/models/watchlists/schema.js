@@ -18,7 +18,7 @@ const WatchlistSchema = new Schema({
 
 WatchlistSchema.post("validate", (error, doc, next) => {
     if (error) {
-
+        console.log(error)
         next(error)
     } else {
         next(error)

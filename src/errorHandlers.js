@@ -1,7 +1,7 @@
 
 export const unAuthorizedHandler = (err, req, res, next) => {
-  if (err.status === 401) {
-    res.status(401).send(err.message || "You are not logged in!");
+  if (err.name === "TokenExpiredError") {
+    res.status(401).send(err.message || "Invalid access token!");
   } else {
     next(err);
   }
@@ -10,13 +10,14 @@ export const unAuthorizedHandler = (err, req, res, next) => {
 export const notFoundErrorHandler = (err, req, res, next) => {
   console.log(err);
   if (err.status === 404) {
-    res.status(404).send(err.message || "Error not found!");
+    res.status(404).send(err.message || "Error, not found!");
   } else {
     next(err);
   }
 };
 
 export const badRequestErrorHandler = (err, req, res, next) => {
+  console.log(err.name)
   if (err.status === 400) {
     res.status(400).send(err.errorList);
   } else {
