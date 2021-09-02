@@ -5,7 +5,9 @@ import PostModel from '../../models/posts/schema.js'
 import { JwtAuthenticateToken } from '../../auth/JWT.js'
 import mongoose from 'mongoose';
 import createError from 'create-error';
-
+import { v2 as cloudinary } from "cloudinary"
+import { CloudinaryStorage } from "multer-storage-cloudinary"
+import multer from "multer"
 
 const { isValidObjectId } = mongoose
 
@@ -30,6 +32,7 @@ router.get("/:ticker", JwtAuthenticateToken, async (req, res, next) => {
 router.post("/:ticker", JwtAuthenticateToken, async (req, res, next) => {
 
     try {
+
         const newPost = new PostModel(req.body)
         const post = await newPost.save()
 
@@ -39,6 +42,37 @@ router.post("/:ticker", JwtAuthenticateToken, async (req, res, next) => {
         } else {
             next(createError(400, "Error creating post!"))
         }
+
+    } catch (error) {
+        next(error)
+    }
+})
+
+
+const cloudinaryStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "postcovers",
+        resource_type: "auto"
+    }
+})
+
+const upload = multer({
+    storage: cloudinaryStorage,
+
+}).single("postcover")
+
+router.post("/:id/uploadCover", JwtAuthenticateToken, upload, async (req, res, next) => {
+
+    try {
+
+        if (!isValidObjectId(req.params.id)) next(createError(404, "Id is invalid!"))
+        const post = await PostModel.findByIdAndUpdate(req.params.id,
+            { image: req.file.path },
+            { new: true })
+
+        console.log(post)
+        post ? res.status(200).send(post) : next(createError(400, "Error uploading image!"))
 
     } catch (error) {
         next(error)
