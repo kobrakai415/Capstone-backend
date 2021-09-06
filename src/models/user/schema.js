@@ -12,7 +12,8 @@ const UserSchema = new Schema({
     password: { type: String, required: true },
     balance: { type: Number, required: true },
     portfolio: [{ type: Schema.Types.ObjectId, ref: "Position" }],
-    watchlists: [{ type: Schema.Types.ObjectId, ref: "Watchlist" }]
+    watchlists: [{ type: Schema.Types.ObjectId, ref: "Watchlist" }],
+    refreshToken: { type: String, required: true}
 
 })
 
@@ -56,14 +57,13 @@ UserSchema.methods.toJSON = function () {
 
     const user = this
 
-    const useObject = user.toObject()
+    const userObject = user.toObject()
 
-    delete useObject.password
-    delete useObject.__v
-    delete useObject.refreshToken
-    delete useObject.email
-
-    return useObject
+    delete userObject.password
+    delete userObject.__v
+    delete userObject.email
+    delete userObject.refreshToken
+    return userObject
 }
 
 export default new model("User", UserSchema)

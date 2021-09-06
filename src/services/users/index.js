@@ -2,7 +2,7 @@ import express from "express"
 import UserModel from "../../models/user/schema.js"
 import createError from "http-errors"
 import { LoginValidator } from "../../helpers/validators.js"
-import { JwtAuthenticateUser, JwtAuthenticateToken, verifyAccessToken } from "../../auth/JWT.js"
+import { JwtAuthenticateUser, JwtAuthenticateToken, verifyAccessToken, refreshTokens } from "../../auth/JWT.js"
 import { validationResult } from "express-validator"
 
 
@@ -22,7 +22,7 @@ router.post("/register", async (req, res, next) => {
             res.cookie("refreshToken", refreshToken, { httpOnly: true })
 
             const userToSend = await UserModel.findById(req.user._id).populate("portfolio watchlists")
-            
+
             res.status(201).send(userToSend)
             console.log(res)
         } else {
@@ -48,7 +48,7 @@ router.post("/login", LoginValidator, async (req, res, next) => {
             res.cookie("accessToken", accessToken)
             res.cookie("refreshToken", refreshToken)
             const findUser = await UserModel.findById(user._id).populate("portfolio watchlists")
-            
+
             res.send(findUser)
         } else {
             next(createError(404, "User not found, check credentials!"))

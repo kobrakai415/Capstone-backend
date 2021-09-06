@@ -16,7 +16,7 @@ const router = express.Router()
 router.get("/:ticker", JwtAuthenticateToken, async (req, res, next) => {
 
     try {
-        const posts = await PostModel.find({ ticker: req.params.ticker }).populate("User comments likes")
+        const posts = await PostModel.find({ ticker: req.params.ticker }).populate("user likes comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
 
         if (posts.length > 0) {
             res.send(posts)
@@ -37,7 +37,7 @@ router.post("/:ticker", JwtAuthenticateToken, async (req, res, next) => {
         const post = await newPost.save()
 
         if (post) {
-            const postToSend = await PostModel.findById(post._id).populate("User Comments Likes")
+            const postToSend = await PostModel.findById(post._id).populate("user comments comments.user likes")
             postToSend ? res.status(201).send(postToSend) : next(createError(400, "Error creating post!"))
         } else {
             next(createError(400, "Error creating post!"))
@@ -48,6 +48,31 @@ router.post("/:ticker", JwtAuthenticateToken, async (req, res, next) => {
     }
 })
 
+router.post("/:postId/like", JwtAuthenticateToken, async (req, res, next) => {
+    try {
+        if (!isValidObjectId(req.params.postId)) next(createError(404, "Id is invalid!"))
+
+        const like = await PostModel.find({ _id: req.params.postId, likes: req.user._id })
+       
+        if (like.length > 0) {
+            const unlike = await PostModel.findByIdAndUpdate(req.params.postId,
+                { $pull: { likes: req.user._id } },
+                { new: true }).populate("user comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
+          
+            unlike ? res.status(200).send(unlike) : next(createError(400, "Error unliking post!"))
+        } else {
+            const like = await PostModel.findByIdAndUpdate(req.params.postId,
+                { $push: { likes: req.user._id } },
+                { new: true }).populate("user comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
+        
+            like ? res.status(200).send(like) : next(createError(400, "Error liking post!"))
+
+        }
+
+    } catch (error) {
+        next(error)
+    }
+})
 
 const cloudinaryStorage = new CloudinaryStorage({
     cloudinary,
@@ -71,9 +96,14 @@ router.post("/:id/uploadCover", JwtAuthenticateToken, upload, async (req, res, n
             { image: req.file.path },
             { new: true })
 
-        console.log(post)
-        post ? res.status(200).send(post) : next(createError(400, "Error uploading image!"))
 
+        if (post) {
+            const posts = await PostModel.find({ stock: post.stock }).populate(" likes")
+
+            posts.length > 0 ? res.status(200).send(posts) : next(createError(400, "Error retrieving posts "))
+        } else {
+            next(createError(400, "Error saving image!"))
+        }
     } catch (error) {
         next(error)
     }

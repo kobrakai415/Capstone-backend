@@ -55,7 +55,7 @@ const generateRefreshToken = (payload) => {
     })
 }
 
-export const verifyAccessToken = (token, next) => {
+export const verifyAccessToken = (token) => {
     
         return new Promise((resolve, reject) => {
             jwt.verify(token, process.env.JWT_SECRET, (err, token) => {
@@ -81,12 +81,14 @@ export const refreshTokens = async actualRefreshToken => {
 
     if (!user) throw new Error("User not found")
 
+    console.log(user)
+    console.log(actualRefreshToken)
 
     if (user.refreshToken === actualRefreshToken) {
 
-        const newAccessToken = await generateJWT({ _id: user._id })
+        const newAccessToken = await generateAccessToken({ _id: user._id })
 
-        const newRefreshToken = await generateRefreshJWT({ _id: user._id })
+        const newRefreshToken = await generateRefreshToken({ _id: user._id })
 
 
         user.refreshToken = newRefreshToken

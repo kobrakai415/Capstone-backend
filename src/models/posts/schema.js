@@ -1,5 +1,4 @@
 import mongoose from "mongoose"
-import createError from "create-error"
 
 const { model, Schema } = mongoose
 
