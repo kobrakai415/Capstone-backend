@@ -3,8 +3,7 @@ import PositionModel from '../../models/positions/schema.js'
 import UserModel from '../../models/user/schema.js'
 import { JwtAuthenticateToken } from '../../auth/JWT.js'
 import mongoose from 'mongoose';
-import createError from 'create-error';
-
+import createError from "http-errors"
 
 const { isValidObjectId } = mongoose
 
@@ -23,11 +22,11 @@ router.post("/buy", JwtAuthenticateToken, async (req, res, next) => {
         const user = await UserModel.findByIdAndUpdate(req.user._id,
             {
                 $addToSet: { portfolio: result._id }, $set: { balance: req.user.balance - transactionValue }
-            }).populate("portfolio")
+            },
+            {new: true}).populate("portfolio watchlists")
 
-        console.log(user)
-
-        res.status(200).send(user)
+  
+       user ? res.status(200).send(user) : next(createError(400, ""))
 
 
 
@@ -43,23 +42,22 @@ router.post("/close", JwtAuthenticateToken, async (req, res, next) => {
 
         const position = await PositionModel.findByIdAndDelete(req.body.id)
 
-        console.log(position)
-
         if (position) {
 
             const user = await UserModel.findByIdAndUpdate(req.user._id,
                 {
                     $pull: { portfolio: req.body.id }, $set: { balance: req.user.balance + req.body.sell }
-                }).populate("portfolio")
+                }, 
+                {new: true}).populate("portfolio watchlists")
             
-                console.log(user)
+              
             user ? res.status(200).send(user) : next(createError(400, "Error updating user portfolio, try again!"))
 
         } else {
             next(createError(400, `Position with ${req.body.id} not found!`))
         }
     } catch (error) {
-        console.log(error)
+    
         next(error)
     }
 })

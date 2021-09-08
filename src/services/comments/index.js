@@ -5,7 +5,8 @@ import PostModel from '../../models/posts/schema.js'
 import CommentModel from '../../models/comments/schema.js'
 import { JwtAuthenticateToken } from '../../auth/JWT.js'
 import mongoose from 'mongoose';
-import createError from 'create-error';
+import createError from "http-errors"
+
 
 
 const { isValidObjectId } = mongoose
@@ -15,7 +16,6 @@ const router = express.Router()
 router.post("/:postId", JwtAuthenticateToken, async (req, res, next) => {
 
     try {
-        if (!isValidObjectId(req.params.postId)) next(createError(404, `ID ${req.params.postId} is invalid`))
         const newComment = new CommentModel({ ...req.body, post: req.params.postId })
         const comment = await newComment.save()
 
@@ -23,7 +23,7 @@ router.post("/:postId", JwtAuthenticateToken, async (req, res, next) => {
             const post = await PostModel.findByIdAndUpdate(req.params.postId,
                 { $push: { comments: comment._id } },
                 { new: true }
-            ).populate("comments")
+            ).populate("comments user").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
 
             post ? res.status(201).send(post) : next(createError(404, "Error saving comment to post!"))
         } else {
@@ -37,19 +37,22 @@ router.post("/:postId", JwtAuthenticateToken, async (req, res, next) => {
 })
 
 
-
-router.post("/", JwtAuthenticateToken, async (req, res, next) => {
+router.delete("/:commentId", JwtAuthenticateToken, async (req, res, next) => {
 
     try {
 
-        const newPost = new PostModel(req.body)
-        const post = await newPost.save()
+        if (!isValidObjectId(req.params.commentId)) next(createError(404, "Comment Id is invalid!"))
 
-        if (post) {
-            const postToSend = await PostModel.findById(post._id).populate("user  likes")
-            postToSend ? res.status(201).send(postToSend) : next(createError(400, "Error creating post!"))
+        const comment = await CommentModel.findByIdAndDelete(req.params.commentId)
+    
+        if (comment) {
+            const postToSend = await PostModel.findByIdAndUpdate(comment.post,
+                { $pull: { comments: req.params.commentId } },
+                { new: true }).populate("comments user").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
+            postToSend ? res.status(200).send(postToSend) : next(createError(400, "Error deleting comment from post!"))
         } else {
-            next(createError(400, "Error creating post!"))
+           
+            next(createError(400, "Error deleting comment!"))
         }
 
     } catch (error) {

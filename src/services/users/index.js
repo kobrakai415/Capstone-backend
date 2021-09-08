@@ -45,8 +45,9 @@ router.post("/login", LoginValidator, async (req, res, next) => {
         if (user) {
 
             const { accessToken, refreshToken } = await JwtAuthenticateUser(user)
+            console.log(refreshToken)
             res.cookie("accessToken", accessToken)
-            res.cookie("refreshToken", refreshToken)
+            res.cookie("refreshToken", refreshToken, { path: "/users/refreshToken" })
             const findUser = await UserModel.findById(user._id).populate("portfolio watchlists")
 
             res.send(findUser)
@@ -60,7 +61,9 @@ router.post("/login", LoginValidator, async (req, res, next) => {
 
 router.post("/refreshToken", async (req, res, next) => {
     try {
+        console.log(req.cookies)
         if (!req.cookies.refreshToken) next(createError(400, "Refresh Token not provided"))
+
         else {
             const { newAccessToken, newRefreshToken } = await refreshTokens(req.cookies.refreshToken)
             res.cookie("accessToken", newAccessToken,)
@@ -72,6 +75,24 @@ router.post("/refreshToken", async (req, res, next) => {
     }
 
 
+})
+
+router.post("/logout", JwtAuthenticateToken, async (req, res, next) => {
+    try {
+        console.log(req.cookies)
+        if (!req.cookies.refreshToken) next(createError(400, "Refresh Token not provided"))
+
+
+        else {
+            const user = req.user
+            user.refreshToken = undefined
+            await user.save()
+
+            res.status(205).send("Loggedidy out!")
+        }
+    } catch (error) {
+        next(error)
+    }
 })
 
 router.post("/checkAccessToken", async (req, res, next) => {

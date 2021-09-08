@@ -4,7 +4,7 @@ import UserModel from '../../models/user/schema.js'
 import PostModel from '../../models/posts/schema.js'
 import { JwtAuthenticateToken } from '../../auth/JWT.js'
 import mongoose from 'mongoose';
-import createError from 'create-error';
+import createError from "http-errors"
 import { v2 as cloudinary } from "cloudinary"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import multer from "multer"
@@ -16,7 +16,7 @@ const router = express.Router()
 router.get("/:ticker", JwtAuthenticateToken, async (req, res, next) => {
 
     try {
-        const posts = await PostModel.find({ ticker: req.params.ticker }).populate("user likes comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
+        const posts = await PostModel.find({ ticker: req.params.ticker }).populate("user comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
 
         if (posts.length > 0) {
             res.send(posts)
