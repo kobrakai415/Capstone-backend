@@ -1,4 +1,4 @@
-import createError from 'create-error';
+import createError from "http-errors"
 import express from 'express';
 import WatchlistModel from '../../models/watchlists/schema.js';
 import UserModel from '../../models/user/schema.js';

@@ -7,21 +7,24 @@ import NewsRouter from "./services/news/index.js";
 import UserRouter from "./services/users/index.js";
 import TradeRouter from './services/positions/index.js';
 import WatchlistRouter from './services/watchlists/index.js';
+import PostsRouter from './services/posts/index.js';
+import CommentsRouter from './services/comments/index.js';
 import cookieParser from 'cookie-parser';
 
 const server = express();
 
 const whitelist = [process.env.FE_DEV_URL, process.env.FE_PROD_URL, "http://localhost:3000"]
+
 console.log('whitelist:', whitelist)
 
 const corsOptions = {
-  origin: function(origin, next){
-    if(whitelist.indexOf(origin) !== -1){
+  origin: function (origin, next) {
+    if (whitelist.indexOf(origin) !== -1) {
       next(null, next)
-    }else{
-      next(createError(403, {message:"Origin not allowed"}))
+    } else {
+      next(createError(403, { message: "Origin not allowed" }))
     }
-  }, 
+  },
   credentials: true
 }
 
@@ -33,6 +36,8 @@ server.use("/", NewsRouter)
 server.use("/users", UserRouter)
 server.use("/trade", TradeRouter)
 server.use("/watchlists", WatchlistRouter)
+server.use("/posts", PostsRouter)
+server.use("/comments", CommentsRouter)
 
 
 server.use(unAuthorizedHandler);

@@ -1,6 +1,7 @@
 import express from 'express';
 import axios from 'axios';
-import createError from 'create-error';
+import createError from "http-errors"
+
 
 
 const newsRoute = express.Router()
