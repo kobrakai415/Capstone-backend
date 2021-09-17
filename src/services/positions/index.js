@@ -19,14 +19,19 @@ router.post("/buy", JwtAuthenticateToken, async (req, res, next) => {
         const result = await entry.save()
         console.log(result)
 
+        const progress = {
+            balance: req.user.balance,
+            date: new Date().toLocaleDateString('en-GB')
+        }
+
         const user = await UserModel.findByIdAndUpdate(req.user._id,
             {
-                $addToSet: { portfolio: result._id }, $set: { balance: req.user.balance - transactionValue }
+                $addToSet: { portfolio: result._id }, $set: { balance: req.user.balance - transactionValue }, $push: { progress: progress }
             },
-            {new: true}).populate("portfolio watchlists")
+            { new: true }).populate("portfolio watchlists")
 
-  
-       user ? res.status(200).send(user) : next(createError(400, ""))
+
+        user ? res.status(200).send(user) : next(createError(400, ""))
 
 
 
@@ -44,20 +49,27 @@ router.post("/close", JwtAuthenticateToken, async (req, res, next) => {
 
         if (position) {
 
+            const progress = {
+                balance: req.user.balance,
+                date: new Date().toLocaleDateString('en-GB')
+            }
+
+            console.log(progress)
+
             const user = await UserModel.findByIdAndUpdate(req.user._id,
                 {
-                    $pull: { portfolio: req.body.id }, $set: { balance: req.user.balance + req.body.sell }
-                }, 
-                {new: true}).populate("portfolio watchlists")
-            
-              
+                    $pull: { portfolio: req.body.id }, $set: { balance: req.user.balance + req.body.sell }, $push: { progress: progress }
+                },
+                { new: true }).populate("portfolio watchlists")
+
+
             user ? res.status(200).send(user) : next(createError(400, "Error updating user portfolio, try again!"))
 
         } else {
             next(createError(400, `Position with ${req.body.id} not found!`))
         }
     } catch (error) {
-    
+
         next(error)
     }
 })

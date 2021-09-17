@@ -37,7 +37,7 @@ router.post("/:ticker", JwtAuthenticateToken, async (req, res, next) => {
         const post = await newPost.save()
 
         if (post) {
-            const postToSend = await PostModel.findById(post._id).populate("user comments comments.user likes")
+            const postToSend = await PostModel.findById(post._id).populate("user comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
             postToSend ? res.status(201).send(postToSend) : next(createError(400, "Error creating post!"))
         } else {
             next(createError(400, "Error creating post!"))
@@ -98,7 +98,7 @@ router.post("/:id/uploadCover", JwtAuthenticateToken, upload, async (req, res, n
 
 
         if (post) {
-            const posts = await PostModel.find({ stock: post.stock }).populate(" likes")
+            const posts = await PostModel.find({ stock: post.stock }).populate("user likes")
 
             posts.length > 0 ? res.status(200).send(posts) : next(createError(400, "Error retrieving posts "))
         } else {

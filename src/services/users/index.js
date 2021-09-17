@@ -11,20 +11,29 @@ const router = express.Router()
 router.post("/register", async (req, res, next) => {
     try {
 
-        const newUser = new UserModel(req.body)
+        const newUser = new UserModel({
+            ...req.body,
+            progress: [
+                {
+                    balance: req.body.balance,
+                    date: newDate.toLocaleDateString("en-gb")
+                }
+            ]
+        })
         const user = await newUser.save()
         console.log(user)
 
         if (user) {
 
             const { accessToken, refreshToken } = await JwtAuthenticateUser(user)
-            res.cookie("accessToken", accessToken, {})
-            res.cookie("refreshToken", refreshToken, )
+            res.cookie("accessToken", accessToken,)
+            res.cookie("refreshToken", refreshToken,)
 
-            const userToSend = await UserModel.findById(req.user._id).populate("portfolio watchlists")
+            const userToSend = await UserModel.findById(user._id).populate("portfolio watchlists")
 
-            res.status(201).send(userToSend)
-            console.log(res)
+            userToSend ? res.status(201).send(userToSend) : next(createError(400, "Faiiled to register user!"))
+
+
         } else {
             next(createError(400, "Error creating new user, please try again!"))
         }
@@ -47,7 +56,7 @@ router.post("/login", LoginValidator, async (req, res, next) => {
             const { accessToken, refreshToken } = await JwtAuthenticateUser(user)
             console.log(refreshToken)
             res.cookie("accessToken", accessToken)
-            res.cookie("refreshToken", refreshToken, )
+            res.cookie("refreshToken", refreshToken,)
             const findUser = await UserModel.findById(user._id).populate("portfolio watchlists")
 
             res.send(findUser)
@@ -67,7 +76,7 @@ router.post("/refreshToken", async (req, res, next) => {
         else {
             const { newAccessToken, newRefreshToken } = await refreshTokens(req.cookies.refreshToken)
             res.cookie("accessToken", newAccessToken,)
-            res.cookie("refreshToken", newRefreshToken, )
+            res.cookie("refreshToken", newRefreshToken,)
             res.send("OK")
         }
     } catch (error) {
