@@ -27,8 +27,8 @@ router.post("/register", async (req, res, next) => {
         if (user) {
 
             const { accessToken, refreshToken } = await JwtAuthenticateUser(user)
-            res.cookie("accessToken", accessToken, { httpOnly: true, sameSite: "lax", secure: true })
-            res.cookie("refreshToken", refreshToken, { httpOnly: true, sameSite: "lax", secure: true })
+            res.cookie("accessToken", accessToken, { httpOnly: true, sameSite: "none", secure: true })
+            res.cookie("refreshToken", refreshToken, { httpOnly: true, sameSite: "none", secure: true })
 
             const userToSend = await UserModel.findById(user._id).populate("portfolio watchlists")
 
@@ -56,8 +56,8 @@ router.post("/login", LoginValidator, async (req, res, next) => {
 
             const { accessToken, refreshToken } = await JwtAuthenticateUser(user)
             console.log(refreshToken)
-            res.cookie("accessToken", accessToken, { httpOnly: true, sameSite: "lax", secure: true })
-            res.cookie("refreshToken", refreshToken, { httpOnly: true, sameSite: "lax", secure: true })
+            res.cookie("accessToken", accessToken, { httpOnly: true, sameSite: "none", secure: true })
+            res.cookie("refreshToken", refreshToken, { httpOnly: true, sameSite: "none", secure: true })
             const findUser = await UserModel.findById(user._id).populate("portfolio watchlists")
 
             res.send(findUser)
@@ -76,8 +76,8 @@ router.post("/refreshToken", async (req, res, next) => {
 
         else {
             const { newAccessToken, newRefreshToken } = await refreshTokens(req.cookies.refreshToken)
-            res.cookie("accessToken", newAccessToken, { httpOnly: true, sameSite: "lax", secure: true })
-            res.cookie("refreshToken", newRefreshToken, { httpOnly: true, sameSite: "lax", secure: true })
+            res.cookie("accessToken", newAccessToken, { httpOnly: true, sameSite: "none", secure: true })
+            res.cookie("refreshToken", newRefreshToken, { httpOnly: true, sameSite: "none", secure: true })
             res.send("OK")
         }
     } catch (error) {
