@@ -10,10 +10,15 @@ const UserSchema = new Schema({
     surname: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    startingBalance: { type: Number, required: true },
     balance: { type: Number, required: true },
     portfolio: [{ type: Schema.Types.ObjectId, ref: "Position" }],
+    progress: [{
+        balance: { type: Number, required: true },
+        date: { type: String, required: true }
+    }],
     watchlists: [{ type: Schema.Types.ObjectId, ref: "Watchlist" }],
-    refreshToken: { type: String, required: true}
+    refreshToken: { type: String }
 
 })
 
