@@ -16,7 +16,8 @@ router.post("/register", async (req, res, next) => {
             progress: [
                 {
                     balance: req.body.balance,
-                    date: newDate.toLocaleDateString("en-gb")
+                    date: new Date().toLocaleDateString('en-GB')
+                    
                 }
             ]
         })
