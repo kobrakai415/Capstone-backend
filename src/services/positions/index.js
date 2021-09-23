@@ -19,14 +19,10 @@ router.post("/buy", JwtAuthenticateToken, async (req, res, next) => {
         const result = await entry.save()
         console.log(result)
 
-        const progress = {
-            balance: req.user.balance,
-            date: new Date().toLocaleDateString('en-GB')
-        }
 
         const user = await UserModel.findByIdAndUpdate(req.user._id,
             {
-                $addToSet: { portfolio: result._id }, $set: { balance: req.user.balance - transactionValue }, $push: { progress: progress }
+                $addToSet: { portfolio: result._id }, $set: {balance: req.user.balance - transactionValue}
             },
             { new: true }).populate("portfolio watchlists")
 
@@ -50,7 +46,7 @@ router.post("/close", JwtAuthenticateToken, async (req, res, next) => {
         if (position) {
 
             const progress = {
-                balance: req.user.balance,
+                balance: req.body.netUnrealized,
                 date: new Date().toLocaleDateString('en-GB')
             }
 
