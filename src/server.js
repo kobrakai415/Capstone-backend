@@ -10,6 +10,7 @@ import WatchlistRouter from './services/watchlists/index.js';
 import PostsRouter from './services/posts/index.js';
 import CommentsRouter from './services/comments/index.js';
 import cookieParser from 'cookie-parser';
+import createError from "http-errors"
 
 const server = express();
 
@@ -19,6 +20,7 @@ console.log('whitelist:', whitelist)
 
 const corsOptions = {
   origin: function (origin, next) {
+
     if (whitelist.indexOf(origin) !== -1) {
       next(null, next)
     } else {
