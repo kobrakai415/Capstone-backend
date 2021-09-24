@@ -9,6 +9,7 @@ import TradeRouter from './services/positions/index.js';
 import WatchlistRouter from './services/watchlists/index.js';
 import PostsRouter from './services/posts/index.js';
 import CommentsRouter from './services/comments/index.js';
+import NetworkRouter from './services/network/index.js';
 import cookieParser from 'cookie-parser';
 import createError from "http-errors"
 
@@ -40,7 +41,7 @@ server.use("/trade", TradeRouter)
 server.use("/watchlists", WatchlistRouter)
 server.use("/posts", PostsRouter)
 server.use("/comments", CommentsRouter)
-
+server.use("network", NetworkRouter)
 
 server.use(unAuthorizedHandler);
 server.use(notFoundErrorHandler);
