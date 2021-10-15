@@ -94,8 +94,8 @@ router.post("/logout", JwtAuthenticateToken, async (req, res, next) => {
         user.refreshToken = "undefined"
         await user.save()
 
-        res.clearCookie("accessToken")
-        res.clearCookie("refreshToken")
+        res.clearCookie("accessToken", {path:'/'})
+        res.clearCookie("refreshToken", {path:'/'})
         res.status(205).send("Loggedidy out!")
 
     } catch (error) {

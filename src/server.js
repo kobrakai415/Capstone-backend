@@ -41,7 +41,7 @@ server.use("/trade", TradeRouter)
 server.use("/watchlists", WatchlistRouter)
 server.use("/posts", PostsRouter)
 server.use("/comments", CommentsRouter)
-server.use("network", NetworkRouter)
+server.use("/network", NetworkRouter)
 
 server.use(unAuthorizedHandler);
 server.use(notFoundErrorHandler);

@@ -1,10 +1,11 @@
 import express from "express"
 import UserModel from "../../models/user/schema.js"
 import createError from "http-errors"
+import PostModel from '../../models/posts/schema.js'
 import { LoginValidator } from "../../helpers/validators.js"
 import { JwtAuthenticateUser, JwtAuthenticateToken, verifyAccessToken, refreshTokens } from "../../auth/JWT.js"
 import { validationResult } from "express-validator"
-
+import mongoose from 'mongoose'
 
 const { isValidObjectId } = mongoose
 
@@ -12,21 +13,36 @@ const { isValidObjectId } = mongoose
 const router = express.Router()
 
 
-router.get("/", async (req, res, next) => {
+router.get("/", JwtAuthenticateToken, async (req, res, next) => {
     try {
         const userFeed = await PostModel.find({
-            $or: [{ userId: req.user._id }, { userId: { $in: req.user.following } }]
-        })
 
-        console.log(userFeed)
+            user: { $in: [req.user._id, req.user.following] }
+        }).populate("user comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
+
         userFeed ? res.send(userFeed) : next(createError(404, "User feed empty"))
-
 
     } catch (error) {
         next(error)
     }
 })
 
+router.get("/:user/search", async (req, res, next) => {
+    try {
+        console.log(req.params.user)
+        const regex = new RegExp(req.params.user, "i")
+        console.log(regex)
+        const users = req.params.user !== "suggested" ? await UserModel.find({ username: { $regex: regex } }, "name surname username") : await UserModel.find({}, "name surname username").limit(5)
+
+        console.log(users)
+        const otherUsers = users ? users.filter((user) => user._id.toString() !== req.user._id.toString()) : next(createError(404, "No useres found"))
+
+        res.send(users);
+
+    } catch (error) {
+        console.log(error)
+    }
+})
 
 router.post("/:userId/follow", async (req, res, next) => {
     try {
