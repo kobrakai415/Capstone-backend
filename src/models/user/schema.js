@@ -8,10 +8,13 @@ const { model, Schema } = mongoose
 const UserSchema = new Schema({
     name: { type: String, required: true },
     surname: { type: String, required: true },
+    username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     startingBalance: { type: Number, required: true },
     balance: { type: Number, required: true },
+    followers: {type: Schema.Types.ObjectId, ref: "User" },
+    following: {type: Schema.Types.ObjectId, ref: "User" },
     portfolio: [{ type: Schema.Types.ObjectId, ref: "Position" }],
     progress: [{
         balance: { type: Number, required: true },
