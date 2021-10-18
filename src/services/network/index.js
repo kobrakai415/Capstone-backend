@@ -15,9 +15,10 @@ const router = express.Router()
 
 router.get("/", JwtAuthenticateToken, async (req, res, next) => {
     try {
+        console.log(req.user.following)
         const userFeed = await PostModel.find({
 
-            user: { $in: [req.user._id, req.user.following] }
+            user: { $in: [req.user._id, ...req.user.following] }
         }).populate("user comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
 
         userFeed ? res.send(userFeed) : next(createError(404, "User feed empty"))
@@ -27,15 +28,13 @@ router.get("/", JwtAuthenticateToken, async (req, res, next) => {
     }
 })
 
-router.get("/:user/search", async (req, res, next) => {
+router.get("/:user/search", JwtAuthenticateToken, async (req, res, next) => {
     try {
         console.log(req.params.user)
         const regex = new RegExp(req.params.user, "i")
         console.log(regex)
-        const users = req.params.user !== "suggested" ? await UserModel.find({ username: { $regex: regex } }, "name surname username") : await UserModel.find({}, "name surname username").limit(5)
-
+        const users = req.params.user !== "suggested" ? await UserModel.find({ $and: [{ username: { $ne: req.user.username } }, { username: { $regex: regex } }] }, "name surname username") : await UserModel.find({ username: { $ne: req.user.username } }, "name surname username").limit(5)
         console.log(users)
-        const otherUsers = users ? users.filter((user) => user._id.toString() !== req.user._id.toString()) : next(createError(404, "No useres found"))
 
         res.send(users);
 
@@ -44,12 +43,12 @@ router.get("/:user/search", async (req, res, next) => {
     }
 })
 
-router.post("/:userId/follow", async (req, res, next) => {
+router.post("/:userId/follow", JwtAuthenticateToken, async (req, res, next) => {
     try {
 
         if (!isValidObjectId(req.params.userId)) next(createError(404, "User Id is invalid!"))
 
-        const userBeingFollowed = await UserModel.findByIdAndUpdate(req.params.id,
+        const userBeingFollowed = await UserModel.findByIdAndUpdate(req.params.userId,
             { $push: { followers: req.user._id } },
             { new: true }
         )
@@ -57,8 +56,12 @@ router.post("/:userId/follow", async (req, res, next) => {
         if (userBeingFollowed) {
             const userFollowing = await UserModel.findByIdAndUpdate(req.user._id,
                 { $push: { following: req.params.userId } },
-                { new: true })
+                {
+                    fields: { "following": 1, "followers": 1 },
+                    new: true
+                })
 
+            console.log(userFollowing)
             userFollowing ?
                 res.status(200).send(userFollowing)
                 : next(creatError(400, "Error adding user to your following list!"))
@@ -74,12 +77,12 @@ router.post("/:userId/follow", async (req, res, next) => {
 })
 
 
-router.post("/:userId/unfollow", async (req, res, next) => {
+router.post("/:userId/unfollow", JwtAuthenticateToken, async (req, res, next) => {
     try {
 
         if (!isValidObjectId(req.params.userId)) next(createError(404, "User Id is invalid!"))
 
-        const userBeingUnFollowed = await UserModel.findByIdAndUpdate(req.params.id,
+        const userBeingUnFollowed = await UserModel.findByIdAndUpdate(req.params.userId,
             { $pull: { followers: req.user._id } },
             { new: true }
         )
@@ -87,7 +90,11 @@ router.post("/:userId/unfollow", async (req, res, next) => {
         if (userBeingUnFollowed) {
             const userFollowing = await UserModel.findByIdAndUpdate(req.user._id,
                 { $pull: { following: req.params.userId } },
-                { new: true })
+                {
+                    fields: { "following": 1, "followers": 1 },
+                    new: true
+                })
+            console.log(userFollowing)
 
             userFollowing ?
                 res.status(200).send(userFollowing)
