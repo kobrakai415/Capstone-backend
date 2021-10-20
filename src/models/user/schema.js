@@ -13,8 +13,9 @@ const UserSchema = new Schema({
     password: { type: String, required: true },
     startingBalance: { type: Number, required: true },
     balance: { type: Number, required: true },
-    followers: {type: Schema.Types.ObjectId, ref: "User" },
-    following: {type: Schema.Types.ObjectId, ref: "User" },
+    followers: [{ type: Schema.Types.ObjectId, ref: "User", unique: true }],
+    following: [{ type: Schema.Types.ObjectId, ref: "User", unique: true }],
+    bio: {type: String},
     portfolio: [{ type: Schema.Types.ObjectId, ref: "Position" }],
     progress: [{
         balance: { type: Number, required: true },

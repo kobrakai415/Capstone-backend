@@ -4,7 +4,9 @@ import createError from "http-errors"
 import { LoginValidator } from "../../helpers/validators.js"
 import { JwtAuthenticateUser, JwtAuthenticateToken, verifyAccessToken, refreshTokens } from "../../auth/JWT.js"
 import { validationResult } from "express-validator"
+import mongoose from "mongoose"
 
+const { isValidObjectId } = mongoose
 
 const router = express.Router()
 
@@ -17,7 +19,7 @@ router.post("/register", async (req, res, next) => {
                 {
                     balance: req.body.balance,
                     date: new Date().toLocaleDateString('en-GB')
-                    
+
                 }
             ]
         })
@@ -93,9 +95,9 @@ router.post("/logout", JwtAuthenticateToken, async (req, res, next) => {
         const user = req.user
         user.refreshToken = "undefined"
         await user.save()
+        res.cookie("accessToken", { expires: new Date(), path: "/" })
+        res.cookie("refreshToken", { expires: new Date(), path: "/" })
 
-        res.clearCookie("accessToken", {path:'/'})
-        res.clearCookie("refreshToken", {path:'/'})
         res.status(205).send("Loggedidy out!")
 
     } catch (error) {
@@ -122,5 +124,26 @@ router.post("/checkAccessToken", async (req, res, next) => {
     }
 })
 
+router.get("/:id", JwtAuthenticateToken, async (req, res, next) => {
+    try {
+        if (!isValidObjectId(req.params.id)) next(createError(404, `ID ${req.params.id} is invalid`))
+        const user = await UserModel.findById(req.params.id)
 
+        user ? res.status(200).send(user) : next(createError(400, "Error retrieving user!"))
+    } catch (error) {
+        next(error)
+    }
+})
+
+router.put("/", JwtAuthenticateToken, async (req, res, next) => {
+    try {
+
+        console.log(req.body)
+        const updatedUser = await UserModel.findByIdAndUpdate(req.user._id, req.body, { new: true, fields: { "name": 1, "surname": 1, "username": 1, "bio": 1 } })
+        console.log(updatedUser)
+        updatedUser ? res.send(updatedUser) : next(createError(400, "Error updating user!"))
+    } catch (error) {
+        next(error)
+    }
+})
 export default router

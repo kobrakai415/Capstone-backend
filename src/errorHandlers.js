@@ -23,7 +23,7 @@ export const forbiddenErrorHandler = (err, req, res, next) => {
   }
 };
 export const notFoundErrorHandler = (err, req, res, next) => {
-  console.log(err);
+
   if (err.status === 404) {
     res.status(404).send(err.message || "Error, not found!");
   } else {
@@ -47,7 +47,7 @@ export const mongoErrorHandlers = (err, req, res, next) => {
 }
 
 export const catchAllErrorHandler = (err, req, res, next) => {
-  console.log("500", err)
+
   res.status(500).send("Generic Server Error");
 };
 
