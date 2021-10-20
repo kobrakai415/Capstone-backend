@@ -49,13 +49,13 @@ router.post("/:userId/follow", JwtAuthenticateToken, async (req, res, next) => {
         if (!isValidObjectId(req.params.userId)) next(createError(404, "User Id is invalid!"))
 
         const userBeingFollowed = await UserModel.findByIdAndUpdate(req.params.userId,
-            { $push: { followers: req.user._id } },
+            { $addToSet: { followers: req.user._id } },
             { new: true }
         )
 
         if (userBeingFollowed) {
             const userFollowing = await UserModel.findByIdAndUpdate(req.user._id,
-                { $push: { following: req.params.userId } },
+                { $addToSet: { following: req.params.userId } },
                 {
                     fields: { "following": 1, "followers": 1 },
                     new: true

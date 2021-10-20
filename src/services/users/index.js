@@ -138,8 +138,9 @@ router.get("/:id", JwtAuthenticateToken, async (req, res, next) => {
 router.put("/", JwtAuthenticateToken, async (req, res, next) => {
     try {
 
-        const updatedUser = await UserModel.findByIdAndUpdate(req.user._id, req.body)
-
+        console.log(req.body)
+        const updatedUser = await UserModel.findByIdAndUpdate(req.user._id, req.body, { new: true, fields: { "name": 1, "surname": 1, "username": 1, "bio": 1 } })
+        console.log(updatedUser)
         updatedUser ? res.send(updatedUser) : next(createError(400, "Error updating user!"))
     } catch (error) {
         next(error)
