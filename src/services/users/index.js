@@ -1,10 +1,13 @@
 import express from "express"
-import UserModel from "../../models/user/schema.js"
-import createError from "http-errors"
-import { LoginValidator } from "../../helpers/validators.js"
-import { JwtAuthenticateUser, JwtAuthenticateToken, verifyAccessToken, refreshTokens } from "../../auth/JWT.js"
 import { validationResult } from "express-validator"
+import createError from "http-errors"
 import mongoose from "mongoose"
+import { JwtAuthenticateToken, JwtAuthenticateUser, refreshTokens, verifyAccessToken } from "../../auth/JWT.js"
+import { LoginValidator } from "../../helpers/validators.js"
+import UserModel from "../../models/user/schema.js"
+import { v2 as cloudinary } from "cloudinary"
+import { CloudinaryStorage } from "multer-storage-cloudinary"
+import multer from "multer"
 
 const { isValidObjectId } = mongoose
 
@@ -146,4 +149,35 @@ router.put("/", JwtAuthenticateToken, async (req, res, next) => {
         next(error)
     }
 })
+const cloudinaryStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "profilePics",
+        resource_type: "auto"
+    }
+})
+
+const upload = multer({
+    storage: cloudinaryStorage,
+
+}).single("profilePic")
+
+
+router.post("/uploadImage", JwtAuthenticateToken, upload, async (req, res, next) => {
+    try {
+        console.log("hello")
+        const userProfile = await UserModel.findByIdAndUpdate(req.user._id,
+            { image: req.file.path },
+            { new: true, fields: { "image": 1 } })
+
+        console.log(userProfile)
+        userProfile ? res.status(200).send(userProfile) : next(createError(400, "Error uploading profile pic"))
+
+    } catch (error) {
+        next(error)
+    }
+})
+
+
+
 export default router
