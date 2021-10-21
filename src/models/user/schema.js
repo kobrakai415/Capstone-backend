@@ -11,11 +11,12 @@ const UserSchema = new Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    image: { type: String, default: "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-male-user-icon.png" },
     startingBalance: { type: Number, required: true },
     balance: { type: Number, required: true },
     followers: [{ type: Schema.Types.ObjectId, ref: "User", unique: true }],
     following: [{ type: Schema.Types.ObjectId, ref: "User", unique: true }],
-    bio: {type: String},
+    bio: { type: String },
     portfolio: [{ type: Schema.Types.ObjectId, ref: "Position" }],
     progress: [{
         balance: { type: Number, required: true },
