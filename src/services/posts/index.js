@@ -13,6 +13,21 @@ const { isValidObjectId } = mongoose
 
 const router = express.Router()
 
+
+router.get("/", JwtAuthenticateToken, async (req, res, next) => {
+    try {
+        const posts = await PostModel.find({
+            user: req.user._id
+        }).populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
+
+        posts.length > 0 ? res.send(posts) : next(createError(404, "No posts for user!"))
+
+    } catch (error) {
+        next(error)
+    }
+
+})
+
 router.get("/:ticker", JwtAuthenticateToken, async (req, res, next) => {
 
     try {
@@ -53,18 +68,18 @@ router.post("/:postId/like", JwtAuthenticateToken, async (req, res, next) => {
         if (!isValidObjectId(req.params.postId)) next(createError(404, "Id is invalid!"))
 
         const like = await PostModel.find({ _id: req.params.postId, likes: req.user._id })
-       
+
         if (like.length > 0) {
             const unlike = await PostModel.findByIdAndUpdate(req.params.postId,
                 { $pull: { likes: req.user._id } },
                 { new: true }).populate("user comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
-          
+
             unlike ? res.status(200).send(unlike) : next(createError(400, "Error unliking post!"))
         } else {
             const like = await PostModel.findByIdAndUpdate(req.params.postId,
                 { $push: { likes: req.user._id } },
                 { new: true }).populate("user comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
-        
+
             like ? res.status(200).send(like) : next(createError(400, "Error liking post!"))
 
         }
