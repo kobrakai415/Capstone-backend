@@ -28,6 +28,22 @@ router.get("/", JwtAuthenticateToken, async (req, res, next) => {
 
 })
 
+router.get("/:id/user", JwtAuthenticateToken, async (req, res, next) => {
+    try {
+        if (!isValidObjectId(req.params.id)) next(createError(404, "User id is invalid!"))
+
+        const posts = await PostModel.find({ user: req.params.id })
+            .populate("user comments")
+            .populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
+
+        posts.length > 0 ? res.send(posts) : next(createError(404, "No posts for user!"))
+
+    } catch (error) {
+        next(error)
+
+    }
+})
+
 router.get("/:ticker", JwtAuthenticateToken, async (req, res, next) => {
 
     try {
