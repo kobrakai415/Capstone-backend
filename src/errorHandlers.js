@@ -1,5 +1,4 @@
 export const badRequestErrorHandler = (err, req, res, next) => {
- 
   if (err.status === 400) {
     res.status(400).send(err.message);
   } else {
@@ -22,8 +21,8 @@ export const forbiddenErrorHandler = (err, req, res, next) => {
     next(err);
   }
 };
-export const notFoundErrorHandler = (err, req, res, next) => {
 
+export const notFoundErrorHandler = (err, req, res, next) => {
   if (err.status === 404) {
     res.status(404).send(err.message || "Error, not found!");
   } else {
@@ -31,15 +30,11 @@ export const notFoundErrorHandler = (err, req, res, next) => {
   }
 };
 
-
-
 //error controller function
 export const mongoErrorHandlers = (err, req, res, next) => {
   try {
- 
     if (err.name === 'ValidationError') return err = handleValidationError(err, res);
     if (err.code && err.code == 11000) return err = handleDuplicateKeyError(err, res);
-    
     next(err)
   } catch (err) {
     res.status(500).send('An unknown error occured.');
@@ -47,10 +42,8 @@ export const mongoErrorHandlers = (err, req, res, next) => {
 }
 
 export const catchAllErrorHandler = (err, req, res, next) => {
-
   res.status(500).send("Generic Server Error");
 };
-
 
 const handleDuplicateKeyError = (err, res) => {
   const field = Object.keys(err.keyValue);

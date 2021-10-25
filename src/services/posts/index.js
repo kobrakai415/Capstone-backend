@@ -18,7 +18,7 @@ router.get("/", JwtAuthenticateToken, async (req, res, next) => {
     try {
         const posts = await PostModel.find({
             user: req.user._id
-        }).populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
+        }).populate("user comments").populate({ path: "comments", model: "Comment", populate: { path: "user", model: "User" } })
 
         posts.length > 0 ? res.send(posts) : next(createError(404, "No posts for user!"))
 
