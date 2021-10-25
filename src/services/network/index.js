@@ -30,10 +30,12 @@ router.get("/", JwtAuthenticateToken, async (req, res, next) => {
 
 router.get("/:user/search", JwtAuthenticateToken, async (req, res, next) => {
     try {
-        console.log(req.params.user)
+
         const regex = new RegExp(req.params.user, "i")
         console.log(regex)
-        const users = req.params.user !== "suggested" ? await UserModel.find({ $and: [{ username: { $ne: req.user.username } }, { username: { $regex: regex } }] }, "name surname username") : await UserModel.find({ username: { $ne: req.user.username } }, "name surname username").limit(5)
+        const users = req.params.user !== "suggested" ?
+            await UserModel.find({ $and: [{ username: { $ne: req.user.username } }, { username: { $regex: regex } }] }, "name surname username image")
+            : await UserModel.find({ username: { $ne: req.user.username } }, "name surname username image").limit(5)
         console.log(users)
 
         res.send(users);
