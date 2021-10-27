@@ -33,11 +33,10 @@ export const notFoundErrorHandler = (err, req, res, next) => {
 //error controller function
 export const mongoErrorHandlers = (err, req, res, next) => {
   try {
-    if (err.name === 'ValidationError') return err = handleValidationError(err, res);
-    if (err.code && err.code == 11000) return err = handleDuplicateKeyError(err, res);
-    next(err)
+    if (err.name === 'ValidationError') handleValidationError(err, res);
+    if (err.code && err.code == 11000) handleDuplicateKeyError(err, res);
   } catch (err) {
-    res.status(500).send('An unknown error occured.');
+    next(err)
   }
 }
 
